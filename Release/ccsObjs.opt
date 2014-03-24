@@ -1,0 +1,1 @@
+-l"./configPkg/linker.cmd" "./platform/package/package_demos.image_processing.openmp.evmc6678l.platform.obj" "./system/resourcemgr.obj" "./system/platform_osal.obj" "./udpHello.obj" "./mcip_master_main.obj" -l"imglib.ae66" -l"libc.a" 
