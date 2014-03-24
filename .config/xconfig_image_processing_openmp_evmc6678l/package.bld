@@ -11,7 +11,7 @@ var makeAssembly = false;
 var Executable = xdc.module('xdc.bld.Executable');
 
 var exeOpts = new Executable.Attrs({
-        cfgScript: 'C:/Users/CK-PC/DSP/Pothole_omp_ndk/image_processing_openmp_evmc6678l.cfg',
+        cfgScript: 'C:/Users/Hassan/workspace_v5_5/image_processing_openmp_evmc6678l/image_processing_openmp_evmc6678l.cfg',
         profile: 'release',
         cfgHome: 'xconfig_image_processing_openmp_evmc6678l',
 });
@@ -40,13 +40,12 @@ else {
 }
 
 var thisObj = {
-    cfg:        'C:/Users/CK-PC/DSP/Pothole_omp_ndk/image_processing_openmp_evmc6678l.cfg',
-    outputPath: 'C:/Users/CK-PC/DSP/Pothole_omp_ndk/.config/xconfig_image_processing_openmp_evmc6678l',
+    cfg:        'C:/Users/Hassan/workspace_v5_5/image_processing_openmp_evmc6678l/image_processing_openmp_evmc6678l.cfg',
+    outputPath: 'C:/Users/Hassan/workspace_v5_5/image_processing_openmp_evmc6678l/.config/xconfig_image_processing_openmp_evmc6678l',
     exeName:    'image_processing_openmp_evmc6678l' + suffix,
     exeIntName: 'image_processing_openmp_evmc6678l' + suffix.replace('.', '_'),
     targ:       targ,
     linkerCommandFile: 'linker.cmd',
-    compilerOptFile: 'compiler.opt',
     compilerDefsFile: 'compiler.opt' + ".defs",
     makeAssembly: makeAssembly
 };

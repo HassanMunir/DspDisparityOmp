@@ -1,7 +1,7 @@
 /* THIS IS A GENERATED FILE -- DO NOT EDIT */
 
 /* configuro was passed a config.bld file */
-xdc.includeFile("C:/Users/CK-PC/DSP/Pothole_omp_ndk/platform/config.bld");
+xdc.includeFile("C:/Users/Hassan/workspace_v5_5/image_processing_openmp_evmc6678l/platform/config.bld");
 var target;    /* the target used for this build */
 
 /* configuro was passed the target's name explicitly */
@@ -21,6 +21,6 @@ if (!(target instanceof xdc.module("xdc.bld.ITarget").Module)) {
 target.ccOpts.prefix = unescape("--gcc%20") + target.ccOpts.prefix;
 
 /* configuro was passed the target's rootDir explicitly */
-target.rootDir = 'C:/ti/ccsv5/tools/compiler/c6000_7.4.7';
+target.rootDir = 'C:/Program Files (x86)/Texas Instruments/C6000 Code Generation Tools 7.4.0';
 
 Build.targets = [target];

@@ -4,7 +4,7 @@ package/xconfig_image_processing_openmp_evmc6678l.sch
 package/.vers_g180
 package/.vers_r170
 package/.vers_b160
-package/.xdc-z63
+package/.xdc-z57
 package/xconfig_image_processing_openmp_evmc6678l.java
 package/xconfig_image_processing_openmp_evmc6678l.class
 package/package_xconfig_image_processing_openmp_evmc6678l.c

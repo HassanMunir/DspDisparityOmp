@@ -2,7 +2,7 @@
  *  Do not modify this file; it is automatically 
  *  generated and any modifications will be overwritten.
  *
- * @(#) xdc-z63
+ * @(#) xdc-z57
  */
 
 #ifndef xconfig_image_processing_openmp_evmc6678l__

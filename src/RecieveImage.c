@@ -28,15 +28,16 @@
 #include "../header/Disparity.h"
 #include "../header/Config.h"
 
+extern uint8_t* GetDisparityMapInline(uint8_t* leftImg, uint8_t* rightImg);
 
-#define TCP_BUFSIZE 1024
+#define TCP_BUFSIZE 2048
 
 int SendImage(SOCKET s, uint8_t* image, int size);
 uint8_t* RecieveImage(SOCKET s, int filesize);
 StereoImage RecieveStereoImage(SOCKET s, int filesize);
 
 int dtask_tcp_echo(SOCKET s, UINT32 unused) {
-	printf("hello\n");
+
 	struct timeval to;
 	char *message = malloc(sizeof(char) * 50);
 	to.tv_sec = 3;
@@ -44,22 +45,13 @@ int dtask_tcp_echo(SOCKET s, UINT32 unused) {
 
 	int filesize;
 
-
-
 	setsockopt(s, SOL_SOCKET, SO_SNDTIMEO, &to, sizeof(to));
 	setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &to, sizeof(to));
-
-
-	//		if(g_transmissionError == 1)
-	//			break;
 
 
 	filesize = WIDTH * HEIGHT;
 
 	StereoImage images = RecieveStereoImage(s, filesize);
-
-	//		if(g_transmissionError == 1)
-	//			break;
 
 	int bytesSent = 0;
 
@@ -70,22 +62,21 @@ int dtask_tcp_echo(SOCKET s, UINT32 unused) {
 	Timestamp_getFreq(&freq);
 
 	uint32_t start = Timestamp_get32();
-//	uint8_t* image = GetDisparityMap(&images);
 
-//	uint8_t* image = GetDisparityMapInline(images.Left, images.Right);
+	uint8_t* image = GetDisparityMapInline(images.Left, images.Right);
 
 	uint32_t timeTaken = Timestamp_get32() - start;
 
 	printf("[%f s]\n", (double)timeTaken/freq.lo);
 
 	printf("Sending disparity map..\n");
-	bytesSent = SendImage(s, images.Left, filesize);
+	bytesSent = SendImage(s, image, filesize);
 	if(bytesSent > 0)
 		printf("Sent disparity map [%d bytes]\n", bytesSent);
 
 	Memory_free(NULL, images.Left, filesize);
 	Memory_free(NULL, images.Right, filesize);
-//	Memory_free(NULL, image, filesize);
+	Memory_free(NULL, image, filesize);
 
 	return -1;
 }

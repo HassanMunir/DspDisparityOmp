@@ -313,12 +313,13 @@ int main() {
 		}
 	}
 	while (1) {
-		if (stcp != INVALID_SOCKET){
-			EchoTcp();
-		}
-		else{
-			printf("invalid\n");
-		}
+		System_printf("in main \n");
+//		if (stcp != INVALID_SOCKET){
+//			EchoTcp();
+//		}
+//		else{
+//			printf("invalid\n");
+//		}
 	}
 }
 

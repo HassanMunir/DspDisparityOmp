@@ -7,7 +7,7 @@
         <srcFile name="package/cfg/image_processing_openmp_evmc6678l_pe66.c"/>
     </sources>
     <configscripts>
-        <srcFile name="C:/Users/CK-PC/DSP/Pothole_omp_ndk/image_processing_openmp_evmc6678l.cfg"/>
+        <srcFile name="C:/Users/Hassan/workspace_v5_5/image_processing_openmp_evmc6678l/image_processing_openmp_evmc6678l.cfg"/>
     </configscripts>
     <makefiles>
         <srcFile name="package.mak" src="package.bld"/>
@@ -20,12 +20,12 @@
     </makefiles>
     <targets>
         <target name="ti.targets.elf.C66"
-            version="ti.targets.elf.C66{1,0,7.4,7"
-            rawVersion="7.4.7"
+            version="ti.targets.elf.C66{1,0,7.4,0"
+            rawVersion="7.4.0"
             platform="ti.platforms.simTCI6616"
             isa="66"
             suffix="e66"
-            rootDir="C:/ti/ccsv5/tools/compiler/c6000_7.4.7"
+            rootDir="C:/PROGRA~2/TEXASI~1/C6000C~1.0"
             os="undefined"
             rts="ti.targets.rts6000">
             <model endian="little"
@@ -44,7 +44,7 @@
         isPartial="false"
         xCfgScript="package/cfg/image_processing_openmp_evmc6678l_pe66.cfg"
         xCfgPrefix="package/cfg/image_processing_openmp_evmc6678l_pe66"
-        cfgScript="C:/Users/CK-PC/DSP/Pothole_omp_ndk/image_processing_openmp_evmc6678l.cfg"
+        cfgScript="C:/Users/Hassan/workspace_v5_5/image_processing_openmp_evmc6678l/image_processing_openmp_evmc6678l.cfg"
         cfgArgs="null"
         />
     </configurations>
@@ -56,7 +56,7 @@
         profile="release"
         xCfgScript="package/cfg/image_processing_openmp_evmc6678l_pe66.cfg"
         xCfgPrefix="package/cfg/image_processing_openmp_evmc6678l_pe66"
-        cfgScript="C:/Users/CK-PC/DSP/Pothole_omp_ndk/image_processing_openmp_evmc6678l.cfg"
+        cfgScript="C:/Users/Hassan/workspace_v5_5/image_processing_openmp_evmc6678l/image_processing_openmp_evmc6678l.cfg"
         cfgArgs="null"
         />
     </executables>
