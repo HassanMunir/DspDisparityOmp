@@ -1,4 +1,15 @@
 eclipse.preferences.version=1
+encoding//CompilerOptimised/makefile=UTF-8
+encoding//CompilerOptimised/objects.mk=UTF-8
+encoding//CompilerOptimised/platform/package/subdir_rules.mk=UTF-8
+encoding//CompilerOptimised/platform/package/subdir_vars.mk=UTF-8
+encoding//CompilerOptimised/sources.mk=UTF-8
+encoding//CompilerOptimised/src/subdir_rules.mk=UTF-8
+encoding//CompilerOptimised/src/subdir_vars.mk=UTF-8
+encoding//CompilerOptimised/subdir_rules.mk=UTF-8
+encoding//CompilerOptimised/subdir_vars.mk=UTF-8
+encoding//CompilerOptimised/system/subdir_rules.mk=UTF-8
+encoding//CompilerOptimised/system/subdir_vars.mk=UTF-8
 encoding//Debug/makefile=UTF-8
 encoding//Debug/platform/package/subdir_rules.mk=UTF-8
 encoding//Debug/platform/package/subdir_vars.mk=UTF-8
