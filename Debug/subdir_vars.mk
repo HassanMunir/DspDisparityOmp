@@ -7,16 +7,13 @@ CFG_SRCS += \
 ../image_processing_openmp_evmc6678l.cfg 
 
 C_SRCS += \
-../RecieveImage.c \
-../mcip_master_main.c 
+../Initialise.c 
 
 OBJS += \
-./RecieveImage.obj \
-./mcip_master_main.obj 
+./Initialise.obj 
 
 C_DEPS += \
-./RecieveImage.pp \
-./mcip_master_main.pp 
+./Initialise.pp 
 
 GEN_MISC_DIRS += \
 ./configPkg/ 
@@ -39,16 +36,13 @@ GEN_MISC_DIRS__QUOTED += \
 "configPkg\" 
 
 C_DEPS__QUOTED += \
-"RecieveImage.pp" \
-"mcip_master_main.pp" 
+"Initialise.pp" 
 
 OBJS__QUOTED += \
-"RecieveImage.obj" \
-"mcip_master_main.obj" 
+"Initialise.obj" 
 
 C_SRCS__QUOTED += \
-"../RecieveImage.c" \
-"../mcip_master_main.c" 
+"../Initialise.c" 
 
 GEN_CMDS__FLAG += \
 -l"./configPkg/linker.cmd" 

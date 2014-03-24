@@ -111,5 +111,6 @@ S64_DEPS__QUOTED :=
 SUBDIRS := \
 . \
 system \
+src \
 platform/package \
 

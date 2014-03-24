@@ -9,10 +9,10 @@ CG_TOOL_ROOT := C:/Program Files (x86)/Texas Instruments/C6000 Code Generation T
 ORDERED_OBJS += \
 $(GEN_CMDS__FLAG) \
 "./platform/package/package_demos.image_processing.openmp.evmc6678l.platform.obj" \
+"./src/RecieveImage.obj" \
 "./system/resourcemgr.obj" \
 "./system/platform_osal.obj" \
-"./mcip_master_main.obj" \
-"./RecieveImage.obj" \
+"./Initialise.obj" \
 -l"C:\ti\mathlib_c66x_3_0_1_1\lib\mathlib.ae66" \
 -l"libc.a" \
 
@@ -25,9 +25,11 @@ RMDIR := RMDIR /S/Q
 -include sources.mk
 -include subdir_vars.mk
 -include system/subdir_vars.mk
+-include src/subdir_vars.mk
 -include platform/package/subdir_vars.mk
 -include subdir_rules.mk
 -include system/subdir_rules.mk
+-include src/subdir_rules.mk
 -include platform/package/subdir_rules.mk
 -include objects.mk
 
@@ -131,8 +133,8 @@ image_processing_openmp_evmc6678l.out: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
 clean:
 	-$(RM) $(GEN_MISC_FILES__QUOTED)$(C6000_EXECUTABLE_OUTPUTS__QUOTED)$(GEN_FILES__QUOTED)$(GEN_OPTS__QUOTED)$(GEN_CMDS__QUOTED) "image_processing_openmp_evmc6678l.out"
 	-$(RMDIR) $(GEN_MISC_DIRS__QUOTED)
-	-$(RM) "RecieveImage.pp" "mcip_master_main.pp" "system\platform_osal.pp" "system\resourcemgr.pp" "platform\package\package_demos.image_processing.openmp.evmc6678l.platform.pp" 
-	-$(RM) "RecieveImage.obj" "mcip_master_main.obj" "system\platform_osal.obj" "system\resourcemgr.obj" "platform\package\package_demos.image_processing.openmp.evmc6678l.platform.obj" 
+	-$(RM) "Initialise.pp" "system\platform_osal.pp" "system\resourcemgr.pp" "src\RecieveImage.pp" "platform\package\package_demos.image_processing.openmp.evmc6678l.platform.pp" 
+	-$(RM) "Initialise.obj" "system\platform_osal.obj" "system\resourcemgr.obj" "src\RecieveImage.obj" "platform\package\package_demos.image_processing.openmp.evmc6678l.platform.obj" 
 	-@echo 'Finished clean'
 	-@echo ' '
 
