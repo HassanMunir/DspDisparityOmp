@@ -31,12 +31,6 @@
  *
  */
 
-#include <c6x.h>
-#include <stdio.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include <ti/sysbios/knl/Idle.h>
 #include <ti/ndk/inc/netmain.h>
 #include <xdc/runtime/Memory.h>
@@ -60,22 +54,9 @@
 
 extern int dtask_tcp_echo(SOCKET s, UINT32 unused);
 
-void echosrv();
-SOCKET stcp;
-SOCKET stcpactive;
-
-//Mailbox_Handle master_mbox_receive = 0;
-//Mailbox_Handle master_mbox_send    = 0;
-#define DDR_HEAP (HeapMem_Handle_to_xdc_runtime_IHeap(ddr_heap))
-
-SOCKET s;
-SOCKET client_sock;
-HANDLE hCfg;
-void CloseTCP();
-void TCP_init();
-void EchoTcp();
-
 extern int32_t res_mgr_init_qmss_global(uint32_t max_num_desc);
+
+HANDLE hCfg;
 
 /**************************************************************************
  ** NDK static configuration
@@ -314,123 +295,13 @@ int main() {
 	}
 	while (1) {
 		System_printf("in main \n");
-//		if (stcp != INVALID_SOCKET){
-//			EchoTcp();
-//		}
-//		else{
-//			printf("invalid\n");
-//		}
+		//		if (stcp != INVALID_SOCKET){
+		//			EchoTcp();
+		//		}
+		//		else{
+		//			printf("invalid\n");
+		//		}
 	}
-}
-
-void echosrv() {
-	printf("echosrv\n");
-
-	client_sock = INVALID_SOCKET;
-	stcp = INVALID_SOCKET;
-	SOCKET sudp = INVALID_SOCKET;
-	SOCKET stcpactive = INVALID_SOCKET;
-	SOCKET stcpbusy;
-	struct sockaddr_in sin1, client;
-	int *clientlen = malloc(sizeof(struct sockaddr));
-	struct timeval timeout; /* Timeout struct for select */
-	int size, tmp;
-
-	/* Allocate the file environment for this task */
-	fdOpenSession(TaskSelf());
-
-	/* Create the main TCP listen socket */
-	stcp = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (stcp == INVALID_SOCKET) {
-		fprintf(stderr,"socket failed\n");
-		//		goto leave;
-	}
-
-	/* Set Port = 7, leaving IP address = Any */
-	bzero( &sin1, sizeof(struct sockaddr_in));
-	sin1.sin_family = AF_INET;
-	sin1.sin_len = sizeof(sin1);
-	sin1.sin_port = htons(7);
-	sin1.sin_addr.s_addr = inet_addr("192.168.2.100");
-
-	/* Bind socket */
-	if (bind(stcp, (PSA) &sin1, sizeof(sin1)) < 0) {
-		fprintf(stderr, "bind failed\n");
-		//		goto leave;
-	}
-
-	/* Start listening */
-	if (listen(stcp, 1) < 0) {
-		fprintf(stderr,"listen failed\n");
-		//		goto leave;
-	}
-
-	client_sock = accept(stcp, (PSA) &client, clientlen);
-	if (client_sock == INVALID_SOCKET) {
-		fprintf(stderr,"accept connect (%d)\n", fdError());
-	}
-
-
-
-//	leave:
-//	printf("leaving\n");
-//	/* We only get here on an error - close the sockets */
-//	if (stcp != INVALID_SOCKET)
-//		fdClose(stcp);
-//	if (sudp != INVALID_SOCKET)
-//		fdClose(sudp);
-//
-//	DbgPrintf(DBG_INFO, "EchoSrv Fatal Error\n");
-//
-//	/* This task is killed by the system - here, we block */
-	TaskBlock(TaskSelf());
-}
-
-void CloseTCP() {
-	if (s != INVALID_SOCKET)
-		fdClose(s);
-	printf("== End TCP Echo Client Test ==\n\n");
-	// Free the file descriptor environment for this Task
-	fdCloseSession((HANDLE) Task_self());
-	Task_exit();
-	/* Delete Configuration */
-	CfgFree(hCfg);
-	NC_SystemClose();
-}
-
-void EchoTcp() {
-//	int I;
-//	char *pBuf = 0;
-//
-//	printf("Echoing\n");
-//	// Allocate a working buffer
-//	if (!(pBuf = Memory_alloc(DDR_HEAP, 797574, 0, NULL))) {
-//		//		printf("failed temp buffer allocation\n");
-//	}
-//	// Try and receive the test pattern back
-//	int byte = 0;
-//	int file_size = 797574;
-//	//	start = Timestamp_get32();
-//	while (byte < file_size) {
-//		//		I = (int) recvnc(s, (void **) &pBuf, 0, &hBuffer);
-//		I = (int) recv(stcp, pBuf + byte, file_size, 0);
-//		if (I > 0) {
-//			byte += I;
-//		}
-//		else{
-//			printf("recv failed (%d)\n", fdError());
-//		}
-//
-//	}
-//	//	I = recv(client_sock, pBuf, 797574, MSG_WAITALL);
-//	if (I < 0) {
-//		//		printf("recv failed (%d)\n", fdError());
-//	}
-//	// Send the buffer
-//	if (send(stcp, pBuf, 797574, 0) < 0) {
-//		//		printf("send failed (%d)\n", fdError());
-//	}
-//	Memory_free(DDR_HEAP, pBuf, 797574);
 }
 
 /*************************************************************************
@@ -536,16 +407,8 @@ static HANDLE hHello = 0;
  *      None
  ************************************************************************/
 static void NetworkOpen() {
-	// Create our local server
-	//	TCP_init();
-	//	while (1) {
-	//		EchoTcp((IPN) EVMStaticIP);
-	//	}
-//	echosrv();
-
-		hHello = DaemonNew(SOCK_STREAMNC, 0, 7, dtask_tcp_echo, OS_TASKPRIHIGH,
-				OS_TASKSTKNORM, 0, 1);
-	//    return;
+	hHello = DaemonNew(SOCK_STREAMNC, 0, 7, dtask_tcp_echo, OS_TASKPRIHIGH,
+			OS_TASKSTKNORM, 0, 1);
 }
 
 /*************************************************************************
@@ -562,9 +425,7 @@ static void NetworkOpen() {
  *      None
  ************************************************************************/
 static void NetworkClose() {
-	CloseTCP();
-	//	DaemonFree(hHello);
-	//    return;
+	DaemonFree(hHello);
 }
 
 /*************************************************************************
