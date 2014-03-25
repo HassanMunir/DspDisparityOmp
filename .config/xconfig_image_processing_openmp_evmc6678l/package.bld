@@ -2,7 +2,7 @@
 
 var targ = xdc.module('ti.targets.elf.C66');
 /* configuro was told the platform explicitly */
-var platform = 'demos.image_processing.openmp.evmc6678l.platform';
+var platform = 'omp';
 
 /* decide whether to make an assembly or an executable */
 var makeAssembly = false;

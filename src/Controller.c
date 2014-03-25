@@ -12,19 +12,24 @@
 
 #include "../header/Controller.h"
 #include "../header/DataTransfer.h"
+#include <xdc/runtime/Timestamp.h>
+#include <xdc/runtime/Types.h>
 
 extern void GetDisparityMapInline(uint8_t* leftImg, uint8_t* rightImg, uint8_t* outImg);
 
 
 void Controller(SOCKET socket) {
 	int filesize;
-	double startTime, endTime;
-
 	uint8_t *leftImg, *rightImg, *outImg;
+
+	uint32_t startTime, timeTaken;
+	Types_FreqHz freq;
+
+	Timestamp_getFreq(&freq);
 
 	filesize = HEIGHT * WIDTH;
 
-	// Allocate a working buffer
+	// Allocate memory
 	leftImg =  Memory_alloc(NULL, filesize, 8, NULL);
 	rightImg =  Memory_alloc(NULL, filesize, 8, NULL);
 	outImg =  Memory_alloc(NULL, filesize, 8, NULL);
@@ -40,11 +45,12 @@ void Controller(SOCKET socket) {
 			printf("Receiving right image failed.. \n");
 
 		printf("Computing disparity map.. \n");
+		startTime = Timestamp_get32();
 
-		startTime = omp_get_wtime();
 		GetDisparityMapInline(leftImg,rightImg, outImg);
-		endTime = (omp_get_wtime() - startTime) / 1000000000;
-		printf("Disparity map computation complete [%f s] \n", endTime);
+
+		timeTaken = Timestamp_get32() - startTime;
+		printf("Disparity map computation complete [%f s] \n", (double)timeTaken/freq.lo);
 
 		printf("Sending disparity map.. \n");
 		if(SendImage(socket, outImg, filesize) <= 1)
