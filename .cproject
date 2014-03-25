@@ -97,7 +97,7 @@
 						<tool id="com.ti.rtsc.buildDefinitions.XDC_3.16.tool.961311604.2053731517" name="XDCtools" superClass="com.ti.rtsc.buildDefinitions.XDC_3.16.tool.961311604"/>
 					</fileInfo>
 					<sourceEntries>
-						<entry excluding="platform/demos/image_processing/openmp/evmc6678l/platform/package/build.cfg|platform/package/build.cfg|demos/image_processing/openmp/evmc6678l/platform/package/build.cfg|udpHello.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="image_processing_openmp_evmc6678l.cfg|platform/demos/image_processing/openmp/evmc6678l/platform/package/build.cfg|platform/package/build.cfg|demos/image_processing/openmp/evmc6678l/platform/package/build.cfg|udpHello.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -200,7 +200,7 @@
 						<tool id="com.ti.rtsc.buildDefinitions.XDC_3.16.tool.994417414.1261900638" name="XDCtools" superClass="com.ti.rtsc.buildDefinitions.XDC_3.16.tool.994417414"/>
 					</fileInfo>
 					<sourceEntries>
-						<entry excluding="platform/package/build.cfg|platform/demos/image_processing/openmp/evmc6678l/platform/package/build.cfg|demos/image_processing/openmp/evmc6678l/platform/package/build.cfg" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="image_processing_openmp_evmc6678l.cfg|platform/package/build.cfg|platform/demos/image_processing/openmp/evmc6678l/platform/package/build.cfg|demos/image_processing/openmp/evmc6678l/platform/package/build.cfg" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

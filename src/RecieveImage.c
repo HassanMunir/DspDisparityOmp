@@ -104,7 +104,7 @@ uint8_t* RecieveImage(SOCKET s, int filesize)
 
 	while(bytesReceived < filesize)
 	{
-		i = recv(s, buffer, TCP_BUFSIZE,0);
+		i = recv(s, buffer, TCP_BUFSIZE,MSG_WAITALL);
 		if( i == 0)
 		{
 			printf("Connection closed - restart program\n");
