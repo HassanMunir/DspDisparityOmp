@@ -61,14 +61,12 @@
 #include "header/Config.h"
 #include "header/Controller.h"
 
-void InitialiseConnection();
-SOCKET stcp;
-SOCKET stcpactive;
 int g_network_ready = 0;
-
-SOCKET s;
+SOCKET stcp;
 SOCKET client_sock;
 HANDLE hCfg;
+
+void InitialiseConnection();
 void CloseConnection();
 
 extern int32_t res_mgr_init_qmss_global(uint32_t max_num_desc);
@@ -99,8 +97,6 @@ static void NetworkIPAddr(IPN IPAddr, uint IfIdx, uint fAdd);
 static void ServiceReport(uint Item, uint Status, uint Report, HANDLE hCfgEntry);
 
 #define MAX_NUM_DESC_OTHER 1024
-
-
 
 void lld_init(void) {
 	QMSS_CFG_T qmss_cfg;
@@ -350,8 +346,8 @@ void InitialiseConnection() {
 }
 
 void CloseConnection() {
-	if (s != INVALID_SOCKET)
-		fdClose(s);
+	if (client_sock != INVALID_SOCKET)
+		fdClose(client_sock);
 	printf("== End TCP Echo Client Test ==\n\n");
 	// Free the file descriptor environment for this Task
 	fdCloseSession((HANDLE) Task_self());

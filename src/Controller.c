@@ -8,6 +8,7 @@
 #include "stdint.h"
 #include <stdio.h>
 #include <xdc/runtime/Memory.h>
+#include <ti/omp/omp.h>
 
 #include "../header/Controller.h"
 #include "../header/DataTransfer.h"
@@ -16,11 +17,12 @@ extern void GetDisparityMapInline(uint8_t* leftImg, uint8_t* rightImg, uint8_t* 
 
 
 void Controller(SOCKET socket) {
-	int filesize = HEIGHT * WIDTH;
+	int filesize;
+	double startTime, endTime;
 
-	uint8_t* leftImg;
-	uint8_t* rightImg;
-	uint8_t* outImg;
+	uint8_t *leftImg, *rightImg, *outImg;
+
+	filesize = HEIGHT * WIDTH;
 
 	// Allocate a working buffer
 	leftImg =  Memory_alloc(NULL, filesize, 8, NULL);
@@ -38,7 +40,11 @@ void Controller(SOCKET socket) {
 			printf("Receiving right image failed.. \n");
 
 		printf("Computing disparity map.. \n");
+
+		startTime = omp_get_wtime();
 		GetDisparityMapInline(leftImg,rightImg, outImg);
+		endTime = (omp_get_wtime() - startTime) / 1000000000;
+		printf("Disparity map computation complete [%f s] \n", endTime);
 
 		printf("Sending disparity map.. \n");
 		if(SendImage(socket, outImg, filesize) <= 1)
