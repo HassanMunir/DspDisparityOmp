@@ -59,25 +59,17 @@
 #include "ti/platform/resource_mgr.h"
 
 #include "header/Config.h"
+#include "header/Controller.h"
 
-// External references
-extern int dtask_udp_hello();
-
-void echosrv();
+void InitialiseConnection();
 SOCKET stcp;
 SOCKET stcpactive;
-int network_ready = 0;
+int g_network_ready = 0;
 
 SOCKET s;
 SOCKET client_sock;
 HANDLE hCfg;
-void CloseTCP();
-void TCP_init();
-void EchoTcp();
-
-extern uint8_t* RecieveImage(SOCKET s, int filesize);
-extern uint8_t* GetDisparityMapInline(uint8_t* leftImg, uint8_t* rightImg);
-
+void CloseConnection();
 
 extern int32_t res_mgr_init_qmss_global(uint32_t max_num_desc);
 
@@ -107,8 +99,8 @@ static void NetworkIPAddr(IPN IPAddr, uint IfIdx, uint fAdd);
 static void ServiceReport(uint Item, uint Status, uint Report, HANDLE hCfgEntry);
 
 #define MAX_NUM_DESC_OTHER 1024
-#define image_width 1070
-#define image_height 743
+
+
 
 void lld_init(void) {
 	QMSS_CFG_T qmss_cfg;
@@ -299,53 +291,14 @@ int main() {
 	}
 
 	while (1) {
-		//		echosrv();
-		//		printf("loop\n");
-		if(network_ready == 1){
-			printf("inside\n");
-			echosrv();
-			//			printf("done\n");
+		if(g_network_ready == 1){
+			InitialiseConnection();
+			Controller(client_sock);
 		}
-		//		if (stcp != INVALID_SOCKET) {
-		//			EchoTcp();
-		//			break;
-		//		} else {
-		//			printf("invalid\n");
-		//		}
-	}
-
-}
-
-void TCP_init() {
-	client_sock = INVALID_SOCKET;
-	stcp = INVALID_SOCKET;
-	struct sockaddr_in sin1;
-	int *clientlen = malloc(sizeof(struct sockaddr));
-
-	/* Allocate the file environment for this task */
-	fdOpenSession(TaskSelf());
-
-	/* Create the main TCP listen socket */
-	stcp = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (stcp == INVALID_SOCKET) {
-		printf("socket failed\n");
-		//		goto leave;
-	}
-
-	/* Set Port = 7, leaving IP address = Any */
-	bzero( &sin1, sizeof(struct sockaddr_in));
-	sin1.sin_family = AF_INET;
-	sin1.sin_len = sizeof(sin1);
-	sin1.sin_port = htons(7);
-	sin1.sin_addr.s_addr = inet_addr("192.168.2.100");
-
-	/* Bind socket */
-	if (bind(stcp, (PSA) &sin1, sizeof(sin1)) < 0) {
-		printf("bind failed\n");
 	}
 }
 
-void echosrv() {
+void InitialiseConnection() {
 
 	client_sock = INVALID_SOCKET;
 	stcp = INVALID_SOCKET;
@@ -357,9 +310,8 @@ void echosrv() {
 
 	/* Create the main TCP listen socket */
 	stcp = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	printf("here3\n");
 	if (stcp == INVALID_SOCKET) {
-		printf("socket failed\n");
+		fprintf(stderr, "socket failed\n");
 		//		goto leave;
 	}
 
@@ -370,33 +322,26 @@ void echosrv() {
 	sin1.sin_port = htons(7);
 	sin1.sin_addr.s_addr = inet_addr("192.168.2.100");
 
-	printf("here4\n");
 	/* Bind socket */
 	if (bind(stcp, (PSA) &sin1, sizeof(sin1)) < 0) {
-		printf("bind failed\n");
+		fprintf(stderr, "bind failed\n");
 	}
-
-	printf("here5\n");
 
 	/* Start listening */
 	if (listen(stcp, 1) < 0) {
-		printf("listen failed\n");
+		fprintf(stderr, "listen failed\n");
 	}
 
-	printf("here6\n");
 	client_sock = accept(stcp, (PSA) &client, clientlen);
 	if (client_sock == NULL) {
-		printf("accept failed\n");
+		fprintf(stderr, "accept failed\n");
 	}
-	printf("here7\n");
 
-	EchoTcp();
-
-	//	/* We only get here on an error - close the sockets */
-	//	if (stcp != INVALID_SOCKET)
-	//		fdClose(stcp);
-	if (client_sock != INVALID_SOCKET)
-		fdClose(client_sock);
+//	//	/* We only get here on an error - close the sockets */
+//	//	if (stcp != INVALID_SOCKET)
+//	//		fdClose(stcp);
+//	if (client_sock != INVALID_SOCKET)
+//		fdClose(client_sock);
 	//
 	//	DbgPrintf(DBG_INFO, "EchoSrv Fatal Error\n");
 
@@ -404,7 +349,7 @@ void echosrv() {
 	//	TaskBlock(TaskSelf());
 }
 
-void CloseTCP() {
+void CloseConnection() {
 	if (s != INVALID_SOCKET)
 		fdClose(s);
 	printf("== End TCP Echo Client Test ==\n\n");
@@ -416,93 +361,6 @@ void CloseTCP() {
 	NC_SystemClose();
 }
 
-void EchoTcp() {
-	printf("in echotcp \n");
-
-	int filesize = HEIGHT * WIDTH;
-	//	printf("receiving left image\n");
-	//
-	//	uint8_t* leftImage = RecieveImage(client_sock, filesize);
-	//
-	//	printf("receiving right image\n");
-	//	uint8_t* rightImage = RecieveImage(client_sock, filesize);
-	////
-	////
-	int I;
-	unsigned char *leftImage;
-	unsigned char *rightImage;
-
-	// Allocate a working buffer
-	if (!(leftImage = (unsigned char *) Memory_alloc(NULL,
-			filesize, 0, NULL))) {
-		//		printf("failed temp buffer allocation\n");
-	}
-
-	// Allocate a working buffer
-	if (!(rightImage = (unsigned char *) Memory_alloc(NULL,
-			filesize, 0, NULL))) {
-		//		printf("failed temp buffer allocation\n");
-	}
-
-
-	// Try and receive the test pattern back
-	int byte = 0;
-	while (byte < filesize) {
-		I = (int) recv(client_sock, leftImage + byte, filesize, MSG_WAITALL);
-		if (I > 0) {
-			byte += I;
-		} else {
-			printf("recv failed (%d)\n", fdError());
-		}
-	}
-
-	printf("Left image recieved\n");
-
-	byte = 0;
-	while (byte < filesize) {
-		I = (int) recv(client_sock, rightImage + byte, filesize, MSG_WAITALL);
-		if (I > 0) {
-			byte += I;
-		} else {
-			printf("recv failed (%d)\n", fdError());
-		}
-	}
-
-	printf("right image recieved\n");
-
-	uint8_t* image = GetDisparityMapInline(leftImage,rightImage);
-
-	printf("finished computation\n");
-
-	int size = filesize;
-	int bytesSent = 0;
-	int total = 0;
-	while(size > 0)
-	{
-		bytesSent = send(client_sock, image + total, size,0);
-		if(bytesSent > 0)
-		{
-			size -= bytesSent;
-			total += bytesSent;
-		}
-	}
-
-
-	//	double start = 0;
-	//	double end = 0;
-	//
-	//	start = omp_get_wtime();
-	//
-	//	printf("Processing %d\n", byte);
-	//	unsigned char* result = potholeDetection(pBuf, image_width, image_height);
-	//	end = (omp_get_wtime() - start) / 1000000000;
-	//	printf(" %f s elapsed\n", end);
-	//	printf("Done\n");
-	////	Memory_free(DDR_HEAP, pBuf, image_width * image_height);
-	//// Send the buffer
-	//	Memory_free(DDR_HEAP, pBuf, image_width * image_height);
-	//	Memory_free(DDR_HEAP, result, image_width * image_height);
-}
 
 /*************************************************************************
  *  @b EVM_init()
@@ -605,29 +463,8 @@ void EVM_init(void) {
  *      None
  ************************************************************************/
 static void NetworkOpen() {
-	//	Task_Handle task;
-	//	Task_Params task_params;
-	//	Error_Block eb;
-	//	if (DNUM == 0) {
-	//		Error_init(&eb);
-	//		Task_Params_init(&task_params);
-	//		task_params.priority = 5;
-	//		task = Task_create((ti_sysbios_knl_Task_FuncPtr) echosrv, &task_params,
-	//				&eb);
-	//		if (task == NULL) {
-	//			System_printf("Task_create() failed!\n");
-	//			return 0;
-	//		}
-	//	}
-	// Create our local server
-	//	TCP_init();
-	//	while (1) {
-	//		EchoTcp((IPN) EVMStaticIP);
-	//	}
-	//	echosrv();
-	network_ready = 1;
+	g_network_ready = 1;
 	return;
-	//	printf("set\n");
 }
 
 /*************************************************************************
@@ -644,8 +481,6 @@ static void NetworkOpen() {
  *      None
  ************************************************************************/
 static void NetworkClose() {
-	//	CloseTCP();
-	//	DaemonFree(hHello);
 	return;
 }
 

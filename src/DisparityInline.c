@@ -10,10 +10,7 @@
 
 static inline float NccCore(uint8_t* restrict leftImg, uint8_t* restrict rightImg, int iWinStart, int iWinEnd, int jWinStartTemplate, int jWinStartMatch, int jWinEndMatch);
 
-uint8_t* GetDisparityMapInline(uint8_t* leftImg, uint8_t* rightImg){
-
-	uint8_t* outImg = Memory_alloc(NULL,  (HEIGHT*WIDTH), 8, NULL);
-
+void GetDisparityMapInline(uint8_t* leftImg, uint8_t* rightImg, uint8_t* outImg){
 
 	int searchRange[9];
 	int searchRangeUnique[9];
@@ -169,8 +166,6 @@ uint8_t* GetDisparityMapInline(uint8_t* leftImg, uint8_t* rightImg){
 			outImg[i* WIDTH + j] =  currentBestMatch;
 		}
 	}
-
-	return outImg;
 }
 
 
