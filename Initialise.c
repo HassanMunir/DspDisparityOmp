@@ -67,9 +67,6 @@ void echosrv();
 SOCKET stcp;
 SOCKET stcpactive;
 int network_ready = 0;
-//Mailbox_Handle master_mbox_receive = 0;
-//Mailbox_Handle master_mbox_send    = 0;
-#define DDR_HEAP (HeapMem_Handle_to_xdc_runtime_IHeap(ddr_heap))
 
 SOCKET s;
 SOCKET client_sock;
@@ -436,13 +433,13 @@ void EchoTcp() {
 	unsigned char *rightImage;
 
 	// Allocate a working buffer
-	if (!(leftImage = (unsigned char *) Memory_alloc(DDR_HEAP,
+	if (!(leftImage = (unsigned char *) Memory_alloc(NULL,
 			filesize, 0, NULL))) {
 		//		printf("failed temp buffer allocation\n");
 	}
 
 	// Allocate a working buffer
-	if (!(rightImage = (unsigned char *) Memory_alloc(DDR_HEAP,
+	if (!(rightImage = (unsigned char *) Memory_alloc(NULL,
 			filesize, 0, NULL))) {
 		//		printf("failed temp buffer allocation\n");
 	}
