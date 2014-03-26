@@ -50,12 +50,12 @@ void GetDisparityMap(uint8_t* leftImg, uint8_t* rightImg, uint8_t* outImg){
 
 		//TODO - This is where parallel processing should start
 		//Iterate over the columns
-#pragma omp parallel
+#pragma omp parallel num_threads(8)
 		{
 
 			//printf("number of threads: %d \n", omp_get_num_threads());
 			//printf("number of procs: %d \n", omp_get_num_procs());
-			#pragma omp for private(j) firstprivate(i, iWinStart, iWinEnd)
+#pragma omp for private(j) firstprivate(i, iWinStart, iWinEnd)
 			for(j = WIN_X; j < WIDTH - WIN_X - MAX_DISP ; j++)
 			{
 				//printf("number of threads: %d \n", omp_get_num_threads());
