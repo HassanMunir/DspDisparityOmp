@@ -85,7 +85,7 @@ void GetDisparityMapInline(uint8_t* leftImg, uint8_t* rightImg, uint8_t* outImg)
 
 //#pragma omp parallel shared(leftImg, rightImg, outImg)
 		{
-//#pragma omp for private(j)
+#pragma omp for private(j)
 			for(j = WIN_X; j < WIDTH - WIN_X - MAX_DISP ; j++)
 			{
 				jWinStart = j - J_SIDE;
