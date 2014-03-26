@@ -7,6 +7,7 @@
 
 #include "../header/DataTransfer.h"
 
+
 int ReceiveImage(SOCKET s,uint8_t* outImg,  int size) {
 	int bytesReceived = 0, errors = 0, i;
 	while(bytesReceived < size)

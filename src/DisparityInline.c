@@ -7,6 +7,8 @@
 #include "../header/Config.h"
 #include <stdint.h>
 #include <xdc/runtime/Memory.h>
+#include <ti/omp/omp.h>
+
 
 static inline float NccCore(uint8_t* restrict leftImg, uint8_t* restrict rightImg, int iWinStart, int iWinEnd, int jWinStartTemplate, int jWinStartMatch, int jWinEndMatch);
 
@@ -56,10 +58,10 @@ void GetDisparityMapInline(uint8_t* leftImg, uint8_t* rightImg, uint8_t* outImg)
 			}
 
 			den = denLeft* denRight;
-//			ncc  = (num * num) * (1/den);
+			//			ncc  = (num * num) * (1/den);
 			ncc = (num*num) * _rcpsp(den);
 
-//			ncc = NccCore(leftImg, rightImg, iWinStart, iWinEnd, jWinStart, jWinStartMatch, jWinEndMatch);
+			//			ncc = NccCore(leftImg, rightImg, iWinStart, iWinEnd, jWinStart, jWinStartMatch, jWinEndMatch);
 			if(ncc > prevCorr)
 			{
 				prevCorr = ncc;
@@ -78,92 +80,99 @@ void GetDisparityMapInline(uint8_t* leftImg, uint8_t* rightImg, uint8_t* outImg)
 
 		//TODO - This is where parallel processing should start
 		//Iterate over the columns
-		for(j = WIN_X; j < WIDTH - WIN_X - MAX_DISP ; j++)
+
+		//#pragma omp for shared(leftImg, rightImg, outImg, iWinStart, iWinEnd) private(j, l,q, k, y, jWinStart, jWinEnd, searchRange, uniqueCount, uniqueExists, searchRangeUnique, denLeft, denRight, den, num, ncc, prevCorr, bestMatchSoFar, currentBestMatch)
+
+//#pragma omp parallel shared(leftImg, rightImg, outImg)
 		{
-			jWinStart = j - J_SIDE;
-			jWinEnd = j + J_SIDE;
-
-			searchRange[0] = outImg[ ((i + 1 )* WIDTH) + (j- 1)] - 1;
-			searchRange[3] = outImg[ ((i + 1 )* WIDTH) + (j - 2)] - 1;
-			searchRange[6] = outImg[ ((i + 1 )* WIDTH) + (j)] - 1;
-
-			searchRange[1] = searchRange[0] + 1;
-			searchRange[2] = searchRange[0] + 2;
-
-			searchRange[4] = searchRange[3] + 1;
-			searchRange[5] = searchRange[3] + 2;
-
-			searchRange[7] = searchRange[6] + 1;
-			searchRange[8] = searchRange[6] + 2;
-
-
-
-			// Find unique values in the search range
-			uniqueCount = 0;
-#pragma MUST_ITERATE(9,9)
-			for(l = 0; l < 9; l++)
+//#pragma omp for private(j)
+			for(j = WIN_X; j < WIDTH - WIN_X - MAX_DISP ; j++)
 			{
-				if(searchRange[l] > MIN_DISP && searchRange[l] < MAX_DISP )
+				jWinStart = j - J_SIDE;
+				jWinEnd = j + J_SIDE;
+
+				searchRange[0] = outImg[ ((i + 1 )* WIDTH) + (j- 1)] - 1;
+				searchRange[3] = outImg[ ((i + 1 )* WIDTH) + (j - 2)] - 1;
+				searchRange[6] = outImg[ ((i + 1 )* WIDTH) + (j)] - 1;
+
+				searchRange[1] = searchRange[0] + 1;
+				searchRange[2] = searchRange[0] + 2;
+
+				searchRange[4] = searchRange[3] + 1;
+				searchRange[5] = searchRange[3] + 2;
+
+				searchRange[7] = searchRange[6] + 1;
+				searchRange[8] = searchRange[6] + 2;
+
+
+
+				// Find unique values in the search range
+				uniqueCount = 0;
+#pragma MUST_ITERATE(9,9)
+				for(l = 0; l < 9; l++)
 				{
-					uniqueExists = 0;
-					for(q = 0; q < uniqueCount; q++)
+					if(searchRange[l] > MIN_DISP && searchRange[l] < MAX_DISP )
 					{
-						if(searchRange[l] == searchRangeUnique[q])
+						uniqueExists = 0;
+						for(q = 0; q < uniqueCount; q++)
 						{
-							uniqueExists = 1;
-							break;
+							if(searchRange[l] == searchRangeUnique[q])
+							{
+								uniqueExists = 1;
+								break;
+							}
+						}
+						if(uniqueExists == 0){
+							searchRangeUnique[uniqueCount] = searchRange[l];
+							uniqueCount++;
 						}
 					}
-					if(uniqueExists == 0){
-						searchRangeUnique[uniqueCount] = searchRange[l];
-						uniqueCount++;
-					}
 				}
-			}
 
 
-			prevCorr = 0;
-			for(k = 0; k < uniqueCount; k++)
-			{
-				jWinStartMatch = jWinStart + searchRangeUnique[k];
-				jWinEndMatch = jWinEnd + searchRangeUnique[k];
+				prevCorr = 0;
+				for(k = 0; k < uniqueCount; k++)
+				{
+					jWinStartMatch = jWinStart + searchRangeUnique[k];
+					jWinEndMatch = jWinEnd + searchRangeUnique[k];
 
-				denLeft = 0; denRight = 0; num = 0;
+					denLeft = 0; denRight = 0; num = 0;
 
 
 #pragma MUST_ITERATE(WIN_Y, WIN_Y)
-				for(y = iWinStart; y <= iWinEnd; y++)
-				{
-					v = jWinStart;
+					for(y = iWinStart; y <= iWinEnd; y++)
+					{
+						v = jWinStart;
 
 #pragma MUST_ITERATE(WIN_X, WIN_X)
-					for(x = jWinStartMatch; x <= jWinEndMatch; x++)
+						for(x = jWinStartMatch; x <= jWinEndMatch; x++)
+						{
+							uint8_t templatePixel = rightImg[y * WIDTH + v];
+							uint8_t matchPixel = leftImg[y * WIDTH + x];
+							num += (templatePixel * matchPixel);
+							denLeft += (matchPixel * matchPixel);
+							denRight += (templatePixel * templatePixel);
+							v++;
+						}
+					}
+
+					den = denLeft* denRight;
+					//				ncc  = (num * num) * (1/den);
+					ncc = (num*num) * _rcpsp(den);
+
+
+					//				ncc = NccCore(leftImg, rightImg, iWinStart, iWinEnd, jWinStart, jWinStartMatch, jWinEndMatch);
+
+					if(ncc > prevCorr)
 					{
-						uint8_t templatePixel = rightImg[y * WIDTH + v];
-						uint8_t matchPixel = leftImg[y * WIDTH + x];
-						num += (templatePixel * matchPixel);
-						denLeft += (matchPixel * matchPixel);
-						denRight += (templatePixel * templatePixel);
-						v++;
+						prevCorr = ncc;
+						currentBestMatch = searchRangeUnique[k];
 					}
 				}
 
-				den = denLeft* denRight;
-//				ncc  = (num * num) * (1/den);
-				ncc = (num*num) * _rcpsp(den);
 
-
-//				ncc = NccCore(leftImg, rightImg, iWinStart, iWinEnd, jWinStart, jWinStartMatch, jWinEndMatch);
-
-				if(ncc > prevCorr)
-				{
-					prevCorr = ncc;
-					currentBestMatch = searchRangeUnique[k];
-				}
+				outImg[i* WIDTH + j] =  currentBestMatch;
 			}
-
-
-			outImg[i* WIDTH + j] =  currentBestMatch;
 		}
 	}
 }

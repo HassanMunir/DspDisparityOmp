@@ -243,7 +243,7 @@ int master_main(void) {
 			sizeof(uint), (UINT8 *) &status, 0);
 
 	// TCP Receive limit
-	status = 819200;
+	status = 8192;
 	CfgAddEntry(hCfg, CFGTAG_IP, CFGITEM_IP_SOCKTCPRXLIMIT, CFG_ADDMODE_UNIQUE,
 			sizeof(uint), (UINT8 *) &status, 0);
 
@@ -305,7 +305,7 @@ void InitialiseConnection() {
 	fdOpenSession(TaskSelf());
 
 	/* Create the main TCP listen socket */
-	stcp = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	stcp = socket(AF_INET, SOCK_STREAMNC, IPPROTO_TCP);
 	if (stcp == INVALID_SOCKET) {
 		fprintf(stderr, "socket failed\n");
 		//		goto leave;
