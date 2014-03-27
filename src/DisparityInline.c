@@ -14,62 +14,66 @@ static inline float NccCore(uint8_t* restrict leftImg, uint8_t* restrict rightIm
 
 void GetDisparityMapInline(uint8_t* leftImg, uint8_t* rightImg, uint8_t* outImg){
 
-	int searchRange[9];
-	int searchRangeUnique[9];
-	int k, i, j, x, y , v, l, q;
-	int iWinStart, iWinEnd, jWinStart, jWinEnd, jWinStartMatch, jWinEndMatch, currentBestMatch;
-	int uniqueCount, uniqueExists;
+	omp_set_num_threads(8);
 
-	float prevCorr, ncc, denLeft, denRight, den, num;
-
-	int bottomLine = HEIGHT - WIN_Y;
+	int iWinStart, iWinEnd;
+	int i, j;
 
 	/*Bottom row*/
-	iWinStart = bottomLine - I_SIDE;
-	iWinEnd = bottomLine + I_SIDE;
+	iWinStart = HEIGHT - WIN_Y - I_SIDE;
+	iWinEnd = HEIGHT - WIN_Y + I_SIDE;
 
-	for(j = WIN_X; j < WIDTH - WIN_X - MAX_DISP ; j++)
+#pragma omp parallel
 	{
-		jWinStart = j - J_SIDE;
-		jWinEnd = j + J_SIDE;
-
-		prevCorr = 0;
-		for(k = 0; k < MAX_DISP; k++)
+#pragma omp for private(j) firstprivate(i, iWinStart, iWinEnd)
+		for(j = WIN_X; j < WIDTH - WIN_X - MAX_DISP ; j++)
 		{
-			jWinStartMatch = jWinStart + k;
-			jWinEndMatch = jWinEnd + k;
+			int jWinStart = j - J_SIDE;
+			int jWinEnd = j + J_SIDE;
 
-			denLeft = 0; denRight = 0; num = 0;
-#pragma MUST_ITERATE(WIN_Y, WIN_Y)
-			for(y = iWinStart; y <= iWinEnd; y++)
+			int jWinStartMatch, jWinEndMatch, currentBestMatch;
+			int k, x, y , v;
+
+			float prevCorr = 0, ncc, denLeft, denRight, den, num;
+
+			for(k = 0; k < MAX_DISP; k++)
 			{
-				v = jWinStart;
+				jWinStartMatch = jWinStart + k;
+				jWinEndMatch = jWinEnd + k;
+
+				denLeft = 0; denRight = 0; num = 0;
+
+#pragma MUST_ITERATE(WIN_Y, WIN_Y)
+				for(y = iWinStart; y <= iWinEnd; y++)
+				{
+					v = jWinStart;
 
 #pragma MUST_ITERATE(WIN_X, WIN_X)
-				for(x = jWinStartMatch; x <= jWinEndMatch; x++)
+					for(x = jWinStartMatch; x <= jWinEndMatch; x++)
+					{
+						uint8_t templatePixel = rightImg[y * WIDTH + v];
+						uint8_t matchPixel = leftImg[y * WIDTH + x];
+						num += (templatePixel * matchPixel);
+						denLeft += (matchPixel * matchPixel);
+						denRight += (templatePixel * templatePixel);
+						v++;
+					}
+				}
+
+				den = denLeft* denRight;
+				//			ncc  = (num * num) * (1/den);
+				ncc = (num*num) * _rcpsp(den);
+
+				//			ncc = NccCore(leftImg, rightImg, iWinStart, iWinEnd, jWinStart, jWinStartMatch, jWinEndMatch);
+				if(ncc > prevCorr)
 				{
-					uint8_t templatePixel = rightImg[y * WIDTH + v];
-					uint8_t matchPixel = leftImg[y * WIDTH + x];
-					num += (templatePixel * matchPixel);
-					denLeft += (matchPixel * matchPixel);
-					denRight += (templatePixel * templatePixel);
-					v++;
+					prevCorr = ncc;
+					currentBestMatch = k;
 				}
 			}
 
-			den = denLeft* denRight;
-			//			ncc  = (num * num) * (1/den);
-			ncc = (num*num) * _rcpsp(den);
-
-			//			ncc = NccCore(leftImg, rightImg, iWinStart, iWinEnd, jWinStart, jWinStartMatch, jWinEndMatch);
-			if(ncc > prevCorr)
-			{
-				prevCorr = ncc;
-				currentBestMatch = k;
-			}
+			outImg[(HEIGHT - WIN_Y) * WIDTH + j] = currentBestMatch;
 		}
-
-		outImg[bottomLine * WIDTH + j] = currentBestMatch;
 	}
 
 	//Iterate over the rows
@@ -81,15 +85,22 @@ void GetDisparityMapInline(uint8_t* leftImg, uint8_t* rightImg, uint8_t* outImg)
 		//TODO - This is where parallel processing should start
 		//Iterate over the columns
 
-		//#pragma omp for shared(leftImg, rightImg, outImg, iWinStart, iWinEnd) private(j, l,q, k, y, jWinStart, jWinEnd, searchRange, uniqueCount, uniqueExists, searchRangeUnique, denLeft, denRight, den, num, ncc, prevCorr, bestMatchSoFar, currentBestMatch)
-
-//#pragma omp parallel shared(leftImg, rightImg, outImg)
+#pragma omp parallel
 		{
-#pragma omp for private(j)
-			for(j = WIN_X; j < WIDTH - WIN_X - MAX_DISP ; j++)
+#pragma omp for private(j) firstprivate(i, iWinStart, iWinEnd)
+			for(j = WIN_X; j < WIDTH - WIN_X - MAX_DISP - 1; j++)	//the -1 term is added so that the number of iterations are a multiple of 8
 			{
-				jWinStart = j - J_SIDE;
-				jWinEnd = j + J_SIDE;
+				int jWinStart = j - J_SIDE;
+				int jWinEnd = j + J_SIDE;
+
+				uint8_t searchRange[9];
+				uint8_t searchRangeUnique[9];
+
+				int uniqueCount = 0, uniqueExists;
+				int jWinStartMatch, jWinEndMatch, currentBestMatch;
+				int k, x, y , v, l, q;
+
+				float prevCorr = 0, ncc, denLeft, denRight, den, num;
 
 				searchRange[0] = outImg[ ((i + 1 )* WIDTH) + (j- 1)] - 1;
 				searchRange[3] = outImg[ ((i + 1 )* WIDTH) + (j - 2)] - 1;
@@ -107,8 +118,6 @@ void GetDisparityMapInline(uint8_t* leftImg, uint8_t* rightImg, uint8_t* outImg)
 
 
 				// Find unique values in the search range
-				uniqueCount = 0;
-#pragma MUST_ITERATE(9,9)
 				for(l = 0; l < 9; l++)
 				{
 					if(searchRange[l] > MIN_DISP && searchRange[l] < MAX_DISP )
@@ -130,7 +139,6 @@ void GetDisparityMapInline(uint8_t* leftImg, uint8_t* rightImg, uint8_t* outImg)
 				}
 
 
-				prevCorr = 0;
 				for(k = 0; k < uniqueCount; k++)
 				{
 					jWinStartMatch = jWinStart + searchRangeUnique[k];
@@ -139,12 +147,10 @@ void GetDisparityMapInline(uint8_t* leftImg, uint8_t* rightImg, uint8_t* outImg)
 					denLeft = 0; denRight = 0; num = 0;
 
 
-#pragma MUST_ITERATE(WIN_Y, WIN_Y)
 					for(y = iWinStart; y <= iWinEnd; y++)
 					{
 						v = jWinStart;
 
-#pragma MUST_ITERATE(WIN_X, WIN_X)
 						for(x = jWinStartMatch; x <= jWinEndMatch; x++)
 						{
 							uint8_t templatePixel = rightImg[y * WIDTH + v];
@@ -169,8 +175,6 @@ void GetDisparityMapInline(uint8_t* leftImg, uint8_t* rightImg, uint8_t* outImg)
 						currentBestMatch = searchRangeUnique[k];
 					}
 				}
-
-
 				outImg[i* WIDTH + j] =  currentBestMatch;
 			}
 		}

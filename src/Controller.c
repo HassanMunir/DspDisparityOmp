@@ -18,39 +18,6 @@
 
 extern void GetDisparityMapInline(uint8_t* leftImg, uint8_t* rightImg, uint8_t* outImg);
 
-#define SIZE	5
-void parallel()
-{
-	float A[SIZE][SIZE], b[SIZE], c[SIZE];
-
-	int i,j;
-	for (i=0; i < SIZE; i++)
-	{
-		for (j=0; j < SIZE; j++)
-			A[i][j] = (j+1) * 1.0;
-		b[i] = 1.0 * (i+1);
-		c[i] = 0.0;
-	}
-
-	float total = 0.0;
-
-#pragma omp parallel shared(A,b,c,total) private(i) num_threads(4)
-	{
-		printf("number of threads: %d \n", omp_get_num_threads());
-		printf("number of procs: %d \n", omp_get_num_procs());
-
-#pragma omp for private(j) reduction(+:total)
-		for (i=0; i < SIZE; i++)
-		{
-			for (j=0; j < SIZE; j++)
-				c[i] += (A[i][j] * b[i]);
-
-			total = total + c[i];
-		}
-	}
-}
-
-
 void Controller(SOCKET socket) {
 
 	int filesize;
@@ -81,8 +48,8 @@ void Controller(SOCKET socket) {
 		printf("Computing disparity map.. \n");
 		startTime = Timestamp_get32();
 
-		GetDisparityMap(leftImg, rightImg, outImg);
-		//GetDisparityMapInline(leftImg,rightImg, outImg);
+//		GetDisparityMap(leftImg, rightImg, outImg);
+		GetDisparityMapInline(leftImg,rightImg, outImg);
 
 		timeTaken = Timestamp_get32() - startTime;
 		printf("Disparity map computation complete [%f s] \n", (double)timeTaken/freq.lo);
@@ -90,8 +57,6 @@ void Controller(SOCKET socket) {
 		printf("Sending disparity map.. \n");
 		if(SendImage(socket, outImg, filesize) <= 1)
 			printf("Sending disparity map failed.. \n");
-
-//		parallel();
 	}
 
 	Memory_free(NULL, leftImg, filesize);
