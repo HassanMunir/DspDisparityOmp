@@ -38,12 +38,10 @@ void Controller(SOCKET socket) {
 	while(1)
 	{
 		printf("Receiving left image..\n");
-		if(ReceiveImage(socket, leftImg, filesize) <= 1)
-			printf("Receiving left image failed.. \n");
+		ReceiveImage(socket, leftImg, filesize);
 
 		printf("Receiving right image..\n");
-		if(ReceiveImage(socket, rightImg, filesize) <= 1)
-			printf("Receiving right image failed.. \n");
+		ReceiveImage(socket, rightImg, filesize);
 
 		printf("Computing disparity map.. \n");
 		startTime = Timestamp_get32();
@@ -55,8 +53,7 @@ void Controller(SOCKET socket) {
 		printf("Disparity map computation complete [%f s] \n", (double)timeTaken/freq.lo);
 
 		printf("Sending disparity map.. \n");
-		if(SendImage(socket, outImg, filesize) <= 1)
-			printf("Sending disparity map failed.. \n");
+		SendImage(socket, outImg, filesize);
 	}
 
 	Memory_free(NULL, leftImg, filesize);
