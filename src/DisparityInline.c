@@ -9,9 +9,6 @@
 #include <xdc/runtime/Memory.h>
 #include <ti/omp/omp.h>
 
-
-static inline float NccCore(uint8_t* restrict leftImg, uint8_t* restrict rightImg, int iWinStart, int iWinEnd, int jWinStartTemplate, int jWinStartMatch, int jWinEndMatch);
-
 void GetDisparityMapInline(uint8_t* leftImg, uint8_t* rightImg, uint8_t* outImg){
 
 	omp_set_num_threads(8);
@@ -61,7 +58,7 @@ void GetDisparityMapInline(uint8_t* leftImg, uint8_t* rightImg, uint8_t* outImg)
 				}
 
 				den = denLeft* denRight;
-				//			ncc  = (num * num) * (1/den);
+//							ncc  = (num * num) * (1/den);
 				ncc = (num*num) * _rcpsp(den);
 
 				//			ncc = NccCore(leftImg, rightImg, iWinStart, iWinEnd, jWinStart, jWinStartMatch, jWinEndMatch);
@@ -163,7 +160,7 @@ void GetDisparityMapInline(uint8_t* leftImg, uint8_t* rightImg, uint8_t* outImg)
 					}
 
 					den = denLeft* denRight;
-					//				ncc  = (num * num) * (1/den);
+					//ncc  = (num * num) * (1/den);
 					ncc = (num*num) * _rcpsp(den);
 
 
@@ -179,51 +176,4 @@ void GetDisparityMapInline(uint8_t* leftImg, uint8_t* rightImg, uint8_t* outImg)
 			}
 		}
 	}
-}
-
-
-
-static inline float NccCore(uint8_t* restrict leftImg, uint8_t* restrict rightImg, int iWinStart, int iWinEnd, int jWinStartTemplate, int jWinStartMatch, int jWinEndMatch)
-{
-	uint8_t templatePixel, matchPixel;
-	float ncc, denominator;
-	float numerator = 0;
-	float denominatorRight = 0;
-	float denominatorLeft = 0;
-
-	int x,y,v, baseAddr;
-
-	//Telling the compiler to optimise this makes it even slower
-	//	_nassert(((int) (leftImg) & 8)==0);
-	//	_nassert(((int) (rightImg) & 8)==0);
-#pragma MUST_ITERATE(WIN_Y, WIN_Y)
-	for(y = iWinStart; y <= iWinEnd; y++)
-	{
-		v = jWinStartTemplate;
-		baseAddr = y * WIDTH;
-
-#pragma MUST_ITERATE(WIN_X, WIN_X)
-		for(x = jWinStartMatch; x <= jWinEndMatch; x++)
-		{
-			templatePixel = rightImg[baseAddr + v];
-			matchPixel = leftImg[baseAddr + x];
-			numerator += (templatePixel * matchPixel);
-			denominatorLeft += (matchPixel * matchPixel);
-			denominatorRight += (templatePixel * templatePixel);
-			v++;
-		}
-	}
-
-	denominator = denominatorLeft * denominatorRight;
-
-
-	//	ncc = numerator * 1/(sqrtsp(denominator));
-	//	ncc = numerator * rsqrtsp(denominator);
-
-	ncc  = (numerator * numerator) * _rcpsp(denominator);
-	//	ncc  = (numerator * numerator) * (1/denominator);
-
-	return ncc;
-	//	return _rcpsp(denominator);
-	//	return denominator;
 }

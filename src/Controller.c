@@ -16,49 +16,55 @@
 #include <xdc/runtime/Timestamp.h>
 #include <xdc/runtime/Types.h>
 
+#pragma DATA_SECTION(g_leftImg, ".leftImg")
+uint8_t g_leftImg[WIDTH * HEIGHT];
+
+#pragma DATA_SECTION(g_rightImg, ".rightImg")
+uint8_t g_rightImg[WIDTH * HEIGHT];
+
+#pragma DATA_SECTION(g_outImg, ".outImg")
+uint8_t	g_outImg[WIDTH * HEIGHT];
+
+
+#pragma DATA_SECTION(g_leftImg1, ".leftImg1")
+uint8_t g_leftImg1[WIDTH * HEIGHT];
+
+#pragma DATA_SECTION(g_rightImg1, ".rightImg1")
+uint8_t g_rightImg1[WIDTH * HEIGHT];
+
+#pragma DATA_SECTION(g_outImg1, ".outImg1")
+uint8_t	g_outImg1[WIDTH * HEIGHT];
+
 extern void GetDisparityMapInline(uint8_t* leftImg, uint8_t* rightImg, uint8_t* outImg);
 
-void Controller(SOCKET socket) {
+void DisparityCalculationWorker(Socket s) {
 
-	int filesize;
-	uint8_t *leftImg, *rightImg, *outImg;
+	printf("Computing disparity map.. \n");
+	GetDisparityMapInline(g_leftImg, g_rightImg, g_outImg);
+	printf("Sending disparity map.. \n");
+	SendImage(s, g_outImg, HEIGHT * WIDTH);
+}
 
-	uint32_t startTime, timeTaken;
-	Types_FreqHz freq;
+void ImageAcquisitionWorker(SOCKET s) {
 
-	Timestamp_getFreq(&freq);
+		printf("Receiving left image..\n");
+		ReceiveImage(s, g_leftImg, HEIGHT * WIDTH);
 
-	filesize = HEIGHT * WIDTH;
+		printf("Receiving right image..\n");
+		ReceiveImage(s, g_rightImg, HEIGHT * WIDTH);
 
-	// Allocate memory
-	leftImg =  Memory_alloc(NULL, filesize, 8, NULL);
-	rightImg =  Memory_alloc(NULL, filesize, 8, NULL);
-	outImg =  Memory_alloc(NULL, filesize, 8, NULL);
+}
+
+
+
+void Controller(SOCKET s) {
 
 	while(1)
 	{
-		printf("Receiving left image..\n");
-		ReceiveImage(socket, leftImg, filesize);
+		ImageAcquisitionWorker(s);
+		DisparityCalculationWorker(s);
 
-		printf("Receiving right image..\n");
-		ReceiveImage(socket, rightImg, filesize);
-
-		printf("Computing disparity map.. \n");
-		startTime = Timestamp_get32();
-
-//		GetDisparityMap(leftImg, rightImg, outImg);
-		GetDisparityMapInline(leftImg,rightImg, outImg);
-
-		timeTaken = Timestamp_get32() - startTime;
-		printf("Disparity map computation complete [%f s] \n", (double)timeTaken/freq.lo);
-
-		printf("Sending disparity map.. \n");
-		SendImage(socket, outImg, filesize);
 	}
-
-	Memory_free(NULL, leftImg, filesize);
-	Memory_free(NULL, rightImg, filesize);
-	Memory_free(NULL, outImg, filesize);
 
 }
 
