@@ -302,7 +302,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="platform/demos/image_processing/openmp/evmc6678l/platform/package/build.cfg|platform/package/build.cfg|demos/image_processing/openmp/evmc6678l/platform/package/build.cfg|udpHello.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="src/Workers.c|platform/demos/image_processing/openmp/evmc6678l/platform/package/build.cfg|platform/package/build.cfg|demos/image_processing/openmp/evmc6678l/platform/package/build.cfg|udpHello.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
